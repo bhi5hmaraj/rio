@@ -88,22 +88,24 @@ The MVP proves the core value proposition while establishing a solid foundation 
 
 ---
 
-## Prior Work: Tampermonkey Prototype
+## Prior Work: Tampermonkey Prototypes
 
-Before building the full Chrome extension, a **Tampermonkey prototype (v6.6)** validated the core concept.
+Before building the Chrome extension, **two Tampermonkey prototypes** validated core technical feasibility and informed architectural decisions.
 
-**Location:** [`prototypes/rio-tampermonkey-v6.6.js`](../prototypes/rio-tampermonkey-v6.6.js)
+**Location:** [`prototypes/`](../prototypes/) folder
 
-### What the Prototype Proved
+### Annotation Prototype (v6.6)
+
+**File:** `rio-tampermonkey-v6.6.js`
+
+**What it proved:**
 
 ✅ **Gemini can fact-check conversations** with Google Search grounding
 ✅ **4-category rubric works well** (factuality, critique, sycophancy, bias)
 ✅ **HTML-aware highlighting** is necessary for rich text formats
 ✅ **Strength-based visual encoding** (opacity) communicates confidence effectively
 
-### Lessons Learned
-
-The prototype revealed several architectural challenges that the MVP addresses:
+**Lessons learned:**
 
 | Prototype Issue | MVP Solution |
 |-----------------|--------------|
@@ -113,7 +115,39 @@ The prototype revealed several architectural challenges that the MVP addresses:
 | Inline UI clutters the page | Side Panel UI (React) |
 | One-shot analysis | Incremental updates as conversation grows |
 
-**Key decision:** The MVP uses the **same 4-category rubric** and **Gemini + Google Search** approach from the prototype, but with production-quality architecture.
+**Key decision:** The MVP uses the **same 4-category rubric** and **Gemini + Google Search** approach from the prototype.
+
+### DAG Visualization Prototype (v1.0)
+
+**File:** `rio-dag-v1.0.js`
+
+**What it proved:**
+
+✅ **React Flow can be embedded** on ChatGPT using iframe sandbox
+✅ **CSP can be bypassed** with `iframe.contentWindow.document.write()`
+✅ **Modal overlay UX** works well for full-screen graph view
+✅ **Graph visualization is technically feasible** for v2
+
+**Lessons learned:**
+
+- **Iframe sandbox works** - Validated CSP workaround for React libraries
+- **Side Panel is better for MVP** - Extension Side Panel API avoids iframe complexity
+- **Defer to v2** - Graph extraction algorithm is non-trivial, focus MVP on annotations
+
+**Key decision:** Graph visualization is **excluded from MVP** but architecture supports it in v2. The Side Panel can directly import React Flow without CSP issues.
+
+### Combined Insights
+
+Both prototypes revealed a critical insight: **Chrome Extension MV3 solves all CSP problems** that Tampermonkey scripts face.
+
+**Chrome Extension advantages:**
+
+1. **Side Panel API** - Dedicated UI space, no CSP restrictions
+2. **Service Worker** - Proxy API calls, avoid CORS issues
+3. **chrome.storage** - Persistent data without server
+4. **Content Script permissions** - Full DOM access on target sites
+
+The MVP architecture is a **direct response** to prototype limitations.
 
 ---
 
