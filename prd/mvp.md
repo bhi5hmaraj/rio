@@ -55,7 +55,12 @@ The MVP proves the core value proposition while establishing a solid foundation 
    - Filter by category (factual, critique, manual)
    - Export all as JSON
 
-6. ✅ **Settings**
+6. ✅ **CopilotKit Chat Interface**
+   - Natural language commands ("fact-check this chat", "export as JSON")
+   - Agent actions for core features
+   - Context-aware responses
+
+7. ✅ **Settings**
    - Store Gemini API key (encrypted)
    - Enable/disable fact-checking
    - Clear all data
@@ -77,7 +82,6 @@ The MVP proves the core value proposition while establishing a solid foundation 
 ❌ **Robust anchoring** - Simple text-based selectors only (Hypothesis in v2)
 ❌ **Multi-platform** - ChatGPT only (architecture supports extension)
 ❌ **Graph visualization** - Text annotations only (React Flow in v2)
-❌ **CopilotKit integration** - Manual UI only (AI agent in v2)
 ❌ **Multiplayer** - Single-user only
 ❌ **RAG/search** - No conversation history search
 ❌ **Chrome Web Store submission** - Developer distribution only
@@ -154,7 +158,38 @@ Gemini fact-check: ❌ Factual Error
 
 ---
 
-### Epic 5: Settings
+### Epic 5: Copilot Chat Interface
+
+**As a** user
+**I want to** interact with Rio using natural language
+**So that** I can trigger actions without clicking buttons
+
+**Acceptance Criteria:**
+- [ ] Chat interface in Side Panel
+- [ ] User can type commands like "fact-check this conversation"
+- [ ] Copilot executes appropriate action (calls fact-checker)
+- [ ] User can ask "export this chat as JSON"
+- [ ] Copilot triggers export and confirms
+- [ ] User can ask "add a note to selected text"
+- [ ] Context-aware responses (knows current conversation, annotations)
+
+**Example Interactions:**
+```
+User: "fact-check this conversation"
+Copilot: "Running fact-check on 12 messages..."
+Copilot: "Found 3 potential issues. Check the annotations list."
+
+User: "export this chat"
+Copilot: "Exporting conversation... Done! Downloaded chatgpt_export.json"
+
+User: "what did we discuss about Python?"
+Copilot: "This conversation covers Python's creation in 1991, its design
+         philosophy, and comparison with JavaScript."
+```
+
+---
+
+### Epic 6: Settings
 
 **As a** user
 **I want to** configure the extension
@@ -370,6 +405,14 @@ const service2 = new AnnotationService(
 │  └───────────────────────────────────────────────┘  │
 │                                                      │
 │  ┌───────────────────────────────────────────────┐  │
+│  │  CopilotChat (CopilotKit Component)          │  │
+│  │  - useCopilotAction("exportChat")            │  │
+│  │  - useCopilotAction("factCheck")             │  │
+│  │  - useCopilotAction("addAnnotation")         │  │
+│  │  - useCopilotReadable(conversation, annos)   │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                      │
+│  ┌───────────────────────────────────────────────┐  │
 │  │  Settings (React Component)                   │  │
 │  │  - API key input                              │  │
 │  │  - Toggles                                    │  │
@@ -428,13 +471,45 @@ interface Settings {
 
 ## User Interface
 
-### Side Panel Layout
+### Side Panel Layout (Tabbed Interface)
+
+#### Tab 1: Copilot Chat
 
 ```
 ┌─────────────────────────────────────┐
 │  Rio                        ⚙️      │
 ├─────────────────────────────────────┤
-│  [Export Chat] [Run Fact-Check]    │
+│  [💬 Chat] [📋 Annotations]        │
+├─────────────────────────────────────┤
+│                                     │
+│  🤖 Rio                             │
+│  How can I help you analyze this   │
+│  conversation?                      │
+│                                     │
+│  You                                │
+│  fact-check this conversation      │
+│                                     │
+│  🤖 Rio                             │
+│  Running fact-check on 12 messages  │
+│  ...                                │
+│  Found 3 potential issues:         │
+│  • 1 factual error                 │
+│  • 2 logical flaws                 │
+│  Check the Annotations tab →       │
+│                                     │
+│  ┌─────────────────────────────┐   │
+│  │ Type a message...           │   │
+│  └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+```
+
+#### Tab 2: Annotations List
+
+```
+┌─────────────────────────────────────┐
+│  Rio                        ⚙️      │
+├─────────────────────────────────────┤
+│  [💬 Chat] [📋 Annotations]        │
 ├─────────────────────────────────────┤
 │  Filters: [All] [Factual] [Manual] │
 ├─────────────────────────────────────┤
@@ -542,16 +617,20 @@ interface Settings {
 
 ---
 
-### Week 3: Manual Annotations
+### Week 3: CopilotKit & Manual Annotations
 
-**Goal:** User can add their own notes
+**Goal:** Copilot chat + user annotations
 
-- [ ] Day 11-12: Text selection detection
-- [ ] Day 13: Annotation form UI
-- [ ] Day 14: Storage (chrome.storage.local)
-- [ ] Day 15: Annotation list UI
+- [ ] Day 11-12: CopilotKit integration
+  - [ ] Install @copilotkit/react-core
+  - [ ] Set up CopilotChat component
+  - [ ] Define actions: exportChat, factCheck, addAnnotation
+  - [ ] Make conversation state readable to agent
+- [ ] Day 13: Text selection detection
+- [ ] Day 14: Annotation form UI (triggered via Copilot or manual)
+- [ ] Day 15: Storage (chrome.storage.local) + annotation list UI
 
-**Deliverable:** User annotations work end-to-end
+**Deliverable:** Copilot chat works, user annotations work end-to-end
 
 ---
 
@@ -559,7 +638,8 @@ interface Settings {
 
 **Goal:** Bug-free, production-ready
 
-- [ ] Day 16-17: Settings page (API key, toggles)
+- [ ] Day 16: Settings page (API key, toggles)
+- [ ] Day 17: Tabbed UI (Chat tab + Annotations tab)
 - [ ] Day 18: Bug fixes, edge cases
 - [ ] Day 19: Manual testing checklist
 - [ ] Day 20: Documentation (README, SETUP)
@@ -635,9 +715,9 @@ Features to build after MVP validation:
 
 1. **Multi-Platform Support** (Claude, Gemini)
 2. **Advanced Anchoring** (Hypothesis vendored code)
-3. **Graph Visualization** (React Flow)
-4. **Backend Integration** (Optional sync)
-5. **CopilotKit** (AI agent interface)
+3. **Graph Visualization** (React Flow concept DAG)
+4. **Backend Integration** (Optional sync, RAG)
+5. **Multiplayer** (Collaborative sessions)
 6. **Chrome Web Store** (Public distribution)
 
 ---
