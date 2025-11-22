@@ -88,6 +88,35 @@ The MVP proves the core value proposition while establishing a solid foundation 
 
 ---
 
+## Prior Work: Tampermonkey Prototype
+
+Before building the full Chrome extension, a **Tampermonkey prototype (v6.6)** validated the core concept.
+
+**Location:** [`prototypes/rio-tampermonkey-v6.6.js`](../prototypes/rio-tampermonkey-v6.6.js)
+
+### What the Prototype Proved
+
+✅ **Gemini can fact-check conversations** with Google Search grounding
+✅ **4-category rubric works well** (factuality, critique, sycophancy, bias)
+✅ **HTML-aware highlighting** is necessary for rich text formats
+✅ **Strength-based visual encoding** (opacity) communicates confidence effectively
+
+### Lessons Learned
+
+The prototype revealed several architectural challenges that the MVP addresses:
+
+| Prototype Issue | MVP Solution |
+|-----------------|--------------|
+| String replacement breaks on HTML changes | W3C TextQuoteSelector with context matching |
+| No persistence across page refreshes | chrome.storage.local + annotation IDs |
+| CSP blocks on ChatGPT | Chrome Extension MV3 with proper permissions |
+| Inline UI clutters the page | Side Panel UI (React) |
+| One-shot analysis | Incremental updates as conversation grows |
+
+**Key decision:** The MVP uses the **same 4-category rubric** and **Gemini + Google Search** approach from the prototype, but with production-quality architecture.
+
+---
+
 ## User Stories
 
 ### Epic 1: ChatGPT Export
