@@ -1,0 +1,199 @@
+:root {
+  /* Brand colors */
+  --rio-primary: #6366f1;
+  --rio-primary-dark: #4f46e5;
+  --rio-primary-light: #818cf8;
+
+  /* Category colors */
+  --rio-factuality: #00c65e;
+  --rio-critique: #007bff;
+  --rio-sycophancy: #ffa500;
+  --rio-bias: #dc3545;
+
+  /* UI colors */
+  --rio-bg: #ffffff;
+  --rio-bg-secondary: #f9fafb;
+  --rio-border: #e5e7eb;
+  --rio-text: #111827;
+  --rio-text-muted: #6b7280;
+
+  /* Spacing */
+  --rio-space-xs: 0.25rem;
+  --rio-space-sm: 0.5rem;
+  --rio-space-md: 1rem;
+  --rio-space-lg: 1.5rem;
+  --rio-space-xl: 2rem;
+
+  /* Typography */
+  --rio-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --rio-font-size-sm: 0.875rem;
+  --rio-font-size-base: 1rem;
+  --rio-font-size-lg: 1.125rem;
+  --rio-font-size-xl: 1.5rem;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--rio-font-family);
+  font-size: var(--rio-font-size-base);
+  color: var(--rio-text);
+  background-color: var(--rio-bg);
+  line-height: 1.5;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.rio-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.rio-header {
+  padding: var(--rio-space-lg);
+  border-bottom: 1px solid var(--rio-border);
+  background-color: var(--rio-bg-secondary);
+}
+
+.rio-header h1 {
+  font-size: var(--rio-font-size-xl);
+  font-weight: 700;
+  color: var(--rio-primary);
+  margin-bottom: var(--rio-space-xs);
+}
+
+.rio-subtitle {
+  font-size: var(--rio-font-size-sm);
+  color: var(--rio-text-muted);
+}
+
+.rio-main {
+  flex: 1;
+  padding: var(--rio-space-lg);
+}
+
+.rio-section {
+  margin-bottom: var(--rio-space-xl);
+}
+
+.rio-section h2 {
+  font-size: var(--rio-font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--rio-space-md);
+}
+
+.rio-actions {
+  display: flex;
+  gap: var(--rio-space-sm);
+  flex-wrap: wrap;
+}
+
+.rio-button {
+  padding: var(--rio-space-sm) var(--rio-space-md);
+  border: none;
+  border-radius: 6px;
+  font-size: var(--rio-font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rio-button.primary {
+  background-color: var(--rio-primary);
+  color: white;
+}
+
+.rio-button.primary:hover {
+  background-color: var(--rio-primary-dark);
+}
+
+.rio-button.secondary {
+  background-color: var(--rio-bg-secondary);
+  color: var(--rio-text);
+  border: 1px solid var(--rio-border);
+}
+
+.rio-button.secondary:hover {
+  background-color: #e5e7eb;
+}
+
+.rio-empty-state {
+  padding: var(--rio-space-lg);
+  text-align: center;
+  color: var(--rio-text-muted);
+  font-size: var(--rio-font-size-sm);
+  background-color: var(--rio-bg-secondary);
+  border-radius: 8px;
+}
+
+.rio-annotation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rio-space-sm);
+}
+
+.rio-annotation-card {
+  padding: var(--rio-space-md);
+  background-color: var(--rio-bg-secondary);
+  border: 1px solid var(--rio-border);
+  border-radius: 6px;
+}
+
+.rio-category {
+  display: inline-block;
+  padding: var(--rio-space-xs) var(--rio-space-sm);
+  font-size: var(--rio-font-size-sm);
+  font-weight: 500;
+  border-radius: 4px;
+  margin-bottom: var(--rio-space-sm);
+}
+
+.rio-category.factuality {
+  background-color: rgba(0, 198, 94, 0.1);
+  color: var(--rio-factuality);
+}
+
+.rio-category.critique {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: var(--rio-critique);
+}
+
+.rio-category.sycophancy {
+  background-color: rgba(255, 165, 0, 0.1);
+  color: var(--rio-sycophancy);
+}
+
+.rio-category.bias {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--rio-bias);
+}
+
+.rio-note {
+  font-size: var(--rio-font-size-sm);
+  line-height: 1.6;
+}
+
+.rio-text-muted {
+  color: var(--rio-text-muted);
+  font-size: var(--rio-font-size-sm);
+}
+
+.rio-footer {
+  padding: var(--rio-space-md);
+  border-top: 1px solid var(--rio-border);
+  background-color: var(--rio-bg-secondary);
+  text-align: center;
+}
+
+.rio-version {
+  font-size: var(--rio-font-size-sm);
+  color: var(--rio-text-muted);
+}

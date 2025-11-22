@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Rio - AI Conversation Annotator",
+  "version": "0.1.0",
+  "description": "Fact-check and annotate AI conversations with Gemini-powered analysis",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Open Rio Side Panel"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "contextMenus",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"]
+    }
+  ],
+  "minimum_chrome_version": "114"
+}
