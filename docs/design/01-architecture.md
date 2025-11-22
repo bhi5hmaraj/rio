@@ -16,6 +16,7 @@ Rio is built as a **Manifest V3 Chrome Extension** to bypass CSP limitations and
 | **Content Script** | "The Hands" | Injected into web page | Vanilla TS + `@hypothesis/text-quote-selector` | • Scrape chat text<br>• Tag DOM elements with stable IDs<br>• Paint colored highlights on page<br>• Render tooltips on hover |
 | **Side Panel** | "The Face" | Extension page (chrome-extension://) | React + CopilotKit + React Flow | • Main UI/HUD<br>• Display Concept DAG<br>• "Run Critique" triggers<br>• Manage user settings (API Key) |
 | **Background Service Worker** | "The Brain" | Extension background | Service Worker (TS) | • Orchestrate API calls to Gemini<br>• Handle `chrome.storage` encryption/decryption<br>• Manage global events<br>• Cross-origin fetch (via host_permissions) |
+| **Backend Server** (Optional) | "The Memory" | Self-hosted server | FastAPI + PostgreSQL + Vector DB | • Long-term annotation storage<br>• RAG on conversation history<br>• Proactive analysis queue<br>• Graph clustering & ML features |
 
 ### Why This Architecture?
 
@@ -36,6 +37,12 @@ Rio is built as a **Manifest V3 Chrome Extension** to bypass CSP limitations and
    - Persistent storage access
    - Can coordinate between multiple tabs/panels
    - Service Worker lifecycle (event-driven, not always running)
+
+4. **Optional Backend Server**
+   - Extension works fully standalone (local-first)
+   - Backend adds: unlimited storage, RAG, proactive analysis
+   - Open source, self-hostable (no vendor lock-in)
+   - See: [Backend Server Design](10-backend-server.md)
 
 ## Data Flow
 

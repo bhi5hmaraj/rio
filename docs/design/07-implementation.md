@@ -217,6 +217,104 @@
 
 ## Total Timeline: ~16 weeks (4 months)
 
+Extension development (Phases 1-7) completes the standalone BYOK version.
+
+---
+
+## Backend Server Roadmap (Optional, Parallel Track)
+
+The backend server can be developed in parallel with or after the extension. It's fully optional - the extension works standalone.
+
+### Backend Phase 1: Foundation (v0.1) — 2 weeks
+
+**Goal:** Basic API with authentication and annotation CRUD.
+
+**Tasks:**
+- [ ] Set up FastAPI project structure
+- [ ] Configure PostgreSQL database (Docker Compose)
+- [ ] Implement user registration/login (JWT)
+- [ ] Create annotation storage endpoints (POST, GET, PUT, DELETE)
+- [ ] Basic API documentation (auto-generated from FastAPI)
+- [ ] Docker Compose deployment setup
+
+**Deliverables:**
+- Self-hostable backend (docker-compose up)
+- Extension can sync annotations to server
+
+**See:** [Backend Server Design](10-backend-server.md#phase-1-foundation)
+
+### Backend Phase 2: Storage & Sync (v0.5) — 2 weeks
+
+**Goal:** Full-text search and robust sync.
+
+**Tasks:**
+- [ ] Implement full-text search (PostgreSQL tsvector)
+- [ ] Bulk sync API for extension
+- [ ] Conflict resolution (last-write-wins)
+- [ ] Rate limiting (per-user quotas)
+- [ ] API key management for extension
+
+**Deliverables:**
+- Extension syncs annotations to backend
+- Users can search their annotation history
+
+**See:** [Backend Server Design](10-backend-server.md#phase-2-storage--sync)
+
+### Backend Phase 3: RAG (v1.0) — 3 weeks
+
+**Goal:** RAG on conversation history.
+
+**Tasks:**
+- [ ] Integrate vector DB (Chroma or Qdrant)
+- [ ] Conversation upload endpoint
+- [ ] Embedding generation (using user's API key)
+- [ ] RAG query endpoint (semantic search)
+- [ ] Extension UI for RAG queries (Side Panel)
+
+**Deliverables:**
+- Users can query conversation history: "What did I learn about X?"
+- Semantic search across all past conversations
+
+**See:** [Backend Server Design](10-backend-server.md#2-rag-on-conversation-history)
+
+### Backend Phase 4: Proactive Analysis (v1.5) — 3 weeks
+
+**Goal:** Background analysis and WebSocket notifications.
+
+**Tasks:**
+- [ ] WebSocket support for real-time updates
+- [ ] Redis job queue for background analysis
+- [ ] Celery worker for async processing
+- [ ] Proactive analysis across all websites
+- [ ] Cache layer for popular pages
+
+**Deliverables:**
+- Background analysis of any webpage
+- Real-time notifications in Side Panel
+
+**See:** [Backend Server Design](10-backend-server.md#3-proactive-analysis-across-all-websites)
+
+### Backend Phase 5: Advanced Features (v2.0) — 4 weeks
+
+**Goal:** Graph clustering, ML features, and E2EE option.
+
+**Tasks:**
+- [ ] End-to-end encryption option
+- [ ] Graph clustering algorithms
+- [ ] ML-based edge inference
+- [ ] Cross-conversation concept linking
+- [ ] Multi-user collaboration (future)
+
+**Deliverables:**
+- Privacy-preserving E2EE mode
+- Advanced graph analysis features
+
+**See:** [Backend Server Design](10-backend-server.md#roadmap)
+
+## Backend Timeline: ~14 weeks (3.5 months)
+
+Backend can be developed in parallel with extension or after v1.0 launch.
+
 ---
 
 ## Code Structure

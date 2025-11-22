@@ -16,6 +16,7 @@ This directory contains the comprehensive design documentation for the Rio Chrom
 8. **[Implementation Plan](07-implementation.md)** - Roadmap, code structure, and rollout strategy
 9. **[Lessons Learned](08-learnings.md)** - Key insights from prototyping phase
 10. **[Hypothesis Insights](09-hypothesis-insights.md)** - Reverse engineering findings and dependency strategy
+11. **[Backend Server](10-backend-server.md)** - Optional self-hosted backend for storage, RAG, and advanced features
 
 ### Quick Reference
 
