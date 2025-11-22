@@ -8,10 +8,11 @@
 Rio is built with **privacy-first** architecture:
 
 1. **Bring Your Own Key (BYOK):** Users provide their own API keys
-2. **No Backend:** Zero Rio-owned servers; all processing is client-side
+2. **Local-First:** Extension works fully standalone; backend is optional
 3. **No Analytics:** No tracking, telemetry, or usage data collection
-4. **Local Storage:** Annotations stored in browser only (unless user enables sync)
-5. **Open Source:** Full code transparency for security audits
+4. **User-Controlled Data:** Choose between local-only or self-hosted backend sync
+5. **Open Source:** Full code transparency (extension + backend) for security audits
+6. **Optional E2EE:** End-to-end encryption available when using backend
 
 ## Chrome Web Store Compliance
 
@@ -35,22 +36,26 @@ We request **minimal permissions** and provide clear justification:
 1. **What data is collected?**
    - Page content (only when user clicks "Analyze")
    - User-entered API keys (encrypted in local storage)
-   - Annotations and graphs (local storage only)
+   - Annotations and graphs (local storage by default)
+   - **If backend enabled:** Annotations synced to user's self-hosted server
 
 2. **How is data used?**
    - Page content sent to **user's Gemini API account** (not Rio servers)
    - API keys used to authenticate with Google Gemini
    - Annotations displayed in Side Panel and used for highlighting
+   - **If backend enabled:** Annotations stored for long-term access and RAG queries
 
 3. **Who has access to data?**
-   - **User only:** Data never leaves browser except to user's API provider
+   - **User only:** Local storage never leaves browser
    - **Google (via Gemini API):** Governed by Google's API Terms of Service
-   - **Rio maintainers:** Zero access (we have no backend)
+   - **If backend enabled:** User's self-hosted server (controlled by user)
+   - **Rio maintainers:** Zero access to user data (no hosted service)
 
 4. **Data retention:**
    - Local storage: Until user clears browser data
    - API provider: See Google Gemini ToS
-   - Rio servers: N/A (we have no servers)
+   - **If backend enabled:** User-controlled retention on their server
+   - Rio-hosted service: N/A (we don't provide hosted service)
 
 5. **Third-party services:**
    - Google Gemini API (user's account)
