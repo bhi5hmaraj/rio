@@ -65,13 +65,16 @@
 
 ### Phase 3: Anchoring & Highlighting (v0.5) — 3 weeks
 
-**Goal:** Implement robust text anchoring and highlighting.
+**Goal:** Implement robust text anchoring and highlighting using vendored Hypothesis code.
+
+**See:** [Hypothesis Insights](09-hypothesis-insights.md) for vendoring strategy and setup.
 
 **Tasks:**
-- [ ] Install Hypothesis libraries (`@hypothesis/dom-anchor-text-quote`)
-- [ ] Implement `AnchorEngine` (content script)
-  - [ ] Create selectors from Range
-  - [ ] Resolve selectors to Range (fuzzy matching)
+- [ ] Run `scripts/vendor-hypothesis.sh` to copy anchoring code
+- [ ] Install npm dependency: `approx-string-match@^2.0.0`
+- [ ] Implement `AnchorEngine` (content script) - wraps vendored code
+  - [ ] Create selectors from Range (`describe()`)
+  - [ ] Resolve selectors to Range (`anchor()` with fuzzy matching)
   - [ ] Handle edge cases (short quotes, dynamic content)
 - [ ] Implement highlighter (content script)
   - [ ] Create overlay elements (bypasses Trusted Types)
@@ -82,6 +85,7 @@
   - [ ] ChatGPT (spans across `<b>`, `<i>`)
   - [ ] Gemini (TrustedHTML environment)
   - [ ] Generic articles
+- [ ] Import Hypothesis test cases for regression testing
 - [ ] Implement tooltip on hover
   - [ ] Show annotation explanation
   - [ ] "Jump to Side Panel" button
