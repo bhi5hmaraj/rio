@@ -13,6 +13,8 @@ When highlighting text on a web page, naive approaches (like `innerHTML.replace(
 
 **Rio requires robust anchoring** that survives these challenges. We use the **Hypothesis approach**, battle-tested on millions of annotations.
 
+**For detailed implementation:** See [Hypothesis Insights](09-hypothesis-insights.md) for reverse engineering findings, vendoring strategy, and production-tested algorithms.
+
 ## The Hypothesis Approach
 
 ### Core Principles

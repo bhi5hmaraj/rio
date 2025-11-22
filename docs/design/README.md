@@ -15,6 +15,7 @@ This directory contains the comprehensive design documentation for the Rio Chrom
 7. **[Data Models](06-data-models.md)** - Storage schemas, message formats, and APIs
 8. **[Implementation Plan](07-implementation.md)** - Roadmap, code structure, and rollout strategy
 9. **[Lessons Learned](08-learnings.md)** - Key insights from prototyping phase
+10. **[Hypothesis Insights](09-hypothesis-insights.md)** - Reverse engineering findings and dependency strategy
 
 ### Quick Reference
 
@@ -29,10 +30,25 @@ This directory contains the comprehensive design documentation for the Rio Chrom
 - **Last Updated:** November 2025
 - **Status:** Active Development
 
+## Design Principles
+
+### Doc Length Guidelines
+- **Target:** 400-500 lines maximum per document
+- **Rationale:** Keeps docs scannable and focused
+- **If over 500 lines:** Split into modular subdocuments or move implementation details to separate files
+
+### Modularity
+- Each doc should have a single, clear focus
+- Reference other docs rather than duplicating content
+- Use `docs/design/implementation/` for detailed code examples
+- Use `docs/design/reference/` for large schemas or API specs
+
 ## Contributing
 
 When updating design docs:
-1. Keep documents modular and focused on their specific domain
-2. Cross-reference related sections using relative links
-3. Update this README if adding new documents
-4. Maintain consistency in terminology across all docs
+1. Keep documents under 500 lines (400-500 ideal)
+2. Make documents modular and focused on their specific domain
+3. Move detailed implementations to `implementation/` subdirectory
+4. Cross-reference related sections using relative links
+5. Update this README if adding new documents
+6. Maintain consistency in terminology across all docs
