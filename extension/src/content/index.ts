@@ -64,6 +64,10 @@ function setupMessageListener() {
         handleScrapeNow(sendResponse);
         return true; // Keep channel open
 
+      case 'GET_SELECTION_CONTEXT':
+        handleGetSelectionContext(message.payload, sendResponse);
+        return true;
+
       case 'SHOW_ANNOTATION_FORM':
         handleShowAnnotationForm(message.payload);
         break;
@@ -100,9 +104,41 @@ function handleScrapeNow(sendResponse: (response: unknown) => void) {
   }
 }
 
+function handleGetSelectionContext(payload: { text: string }, sendResponse: (response: unknown) => void) {
+  try {
+    const { text } = payload;
+
+    // Find the text in the DOM to get prefix/suffix context
+    const body = document.body.innerText;
+    const textIndex = body.indexOf(text);
+
+    if (textIndex === -1) {
+      sendResponse({ prefix: '', suffix: '', messageIndex: 0 });
+      return;
+    }
+
+    // Extract 20 chars before and after
+    const prefix = body.substring(Math.max(0, textIndex - 20), textIndex);
+    const suffix = body.substring(textIndex + text.length, textIndex + text.length + 20);
+
+    // Try to determine message index (simplified for now)
+    // In a real implementation, you'd walk the DOM to find which message contains the text
+    let messageIndex = 0;
+
+    sendResponse({
+      prefix,
+      suffix,
+      messageIndex,
+    });
+  } catch (error) {
+    console.error('Rio: Error getting selection context', error);
+    sendResponse({ prefix: '', suffix: '', messageIndex: 0 });
+  }
+}
+
 function handleShowAnnotationForm(payload: { selectedText: string }) {
   console.log('Rio: Show annotation form for', payload.selectedText);
-  // TODO: Week 4 - Show annotation form in side panel
+  // Form is shown in Side Panel via message
 }
 
 function handleHighlightText(payload: { annotation: unknown }) {

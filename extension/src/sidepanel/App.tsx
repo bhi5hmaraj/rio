@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRioStore } from '@/shared/store';
 import { SettingsForm } from './components/SettingsForm';
+import { AnnotationForm } from './components/AnnotationForm';
+import type { Annotation } from '@/shared/types';
 
 function App() {
   const { annotations, settings, loadAnnotations, loadSettings, setAnnotations } = useRioStore();
@@ -8,6 +10,8 @@ function App() {
   const [exportError, setExportError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAnnotationForm, setShowAnnotationForm] = useState(false);
+  const [selectedText, setSelectedText] = useState<string>('');
 
   // Load data from storage on mount
   useEffect(() => {
@@ -36,6 +40,19 @@ function App() {
 
     loadData();
   }, [loadAnnotations, loadSettings]);
+
+  // Listen for messages from background/content scripts
+  useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.type === 'SHOW_ANNOTATION_FORM') {
+        setSelectedText(message.payload?.selectedText || '');
+        setShowAnnotationForm(true);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+  }, []);
 
   // Listen for storage changes for real-time updates
   useEffect(() => {
@@ -127,6 +144,57 @@ function App() {
     }
   };
 
+  const handleRunFactCheck = async () => {
+    try {
+      // Get active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      if (!tab.id) {
+        throw new Error('No active tab found');
+      }
+
+      // Scrape conversation first
+      const scrapeResponse = await chrome.tabs.sendMessage(tab.id, {
+        type: 'SCRAPE_NOW',
+      });
+
+      if (!scrapeResponse.success) {
+        throw new Error(scrapeResponse.error || 'Failed to scrape conversation');
+      }
+
+      const { data } = scrapeResponse;
+
+      // Run fact-check via background worker
+      const factCheckResponse = await chrome.runtime.sendMessage({
+        type: 'RUN_FACT_CHECK',
+        payload: {
+          conversationId: data.conversationId,
+          messages: data.messages,
+        },
+      });
+
+      if (!factCheckResponse.success) {
+        throw new Error(factCheckResponse.error || 'Fact-check failed');
+      }
+
+      console.log('Rio: Fact-check complete', factCheckResponse.data);
+    } catch (error) {
+      console.error('Rio: Fact-check error', error);
+      setExportError((error as Error).message);
+    }
+  };
+
+  const handleSaveAnnotation = (annotation: Annotation) => {
+    setShowAnnotationForm(false);
+    setSelectedText('');
+    console.log('Rio: Annotation saved', annotation);
+  };
+
+  const handleCancelAnnotation = () => {
+    setShowAnnotationForm(false);
+    setSelectedText('');
+  };
+
   return (
     <div className="rio-app">
       <header className="rio-header">
@@ -135,6 +203,18 @@ function App() {
       </header>
 
       <main className="rio-main">
+        {/* Show annotation form when active */}
+        {showAnnotationForm && conversationId && (
+          <section className="rio-section rio-annotation-form-section">
+            <AnnotationForm
+              selectedText={selectedText}
+              conversationId={conversationId}
+              onSave={handleSaveAnnotation}
+              onCancel={handleCancelAnnotation}
+            />
+          </section>
+        )}
+
         <section className="rio-section">
           <h2>Quick Actions</h2>
           <div className="rio-actions">
@@ -145,13 +225,17 @@ function App() {
             >
               {isExporting ? 'Exporting...' : 'Export Chat'}
             </button>
-            <button className="rio-button secondary">
+            <button className="rio-button secondary" onClick={handleRunFactCheck}>
               Run Fact-Check
             </button>
+            <button
+              className="rio-button secondary"
+              onClick={() => setShowAnnotationForm(!showAnnotationForm)}
+            >
+              {showAnnotationForm ? 'Hide Form' : 'Add Annotation'}
+            </button>
           </div>
-          {exportError && (
-            <p className="rio-error">Export failed: {exportError}</p>
-          )}
+          {exportError && <p className="rio-error">Error: {exportError}</p>}
         </section>
 
         <section className="rio-section">
@@ -168,6 +252,10 @@ function App() {
                     {annotation.category}
                   </span>
                   <p className="rio-note">{annotation.note}</p>
+                  <p className="rio-meta">
+                    {annotation.source === 'ai' ? '🤖 AI' : '✏️ Manual'} •{' '}
+                    {new Date(annotation.createdAt).toLocaleTimeString()}
+                  </p>
                 </div>
               ))}
             </div>
