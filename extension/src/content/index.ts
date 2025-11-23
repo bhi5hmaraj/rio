@@ -8,7 +8,7 @@
  * - Text selection detection
  */
 
-import { getChatGPTSelectors, scrapeConversation, getConversationId } from './scrapers/chatgpt';
+import { scrapeConversation, getConversationId } from './scrapers/chatgpt';
 
 console.log('Rio: Content script loaded on', window.location.href);
 
@@ -35,7 +35,7 @@ function init() {
 // --- Message Handling ---
 
 function setupMessageListener() {
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     console.log('Rio Content: Received message', message.type);
 
     switch (message.type) {

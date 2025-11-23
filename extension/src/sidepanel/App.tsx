@@ -1,4 +1,3 @@
-import React from 'react';
 import { useRioStore } from '@/shared/store';
 
 function App() {

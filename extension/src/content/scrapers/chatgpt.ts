@@ -32,19 +32,6 @@ export const CHATGPT_SELECTORS = {
 
 // --- Helper: Try multiple selectors ---
 
-function querySelectorWithFallbacks(selectors: string[]): Element | null {
-  for (const selector of selectors) {
-    const el = document.querySelector(selector);
-    if (el) {
-      console.log(`Rio: Found element via selector: ${selector}`);
-      return el;
-    }
-  }
-
-  console.warn('Rio: No element found with selectors:', selectors);
-  return null;
-}
-
 function querySelectorAllWithFallbacks(selectors: string[]): NodeListOf<Element> | null {
   for (const selector of selectors) {
     const elements = document.querySelectorAll(selector);
