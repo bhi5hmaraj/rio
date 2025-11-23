@@ -10,6 +10,8 @@
 
 import { ScraperFactory } from './scrapers/factory';
 import type { PlatformScraper } from './scrapers/base';
+import { highlightAnnotations, clearHighlights } from './highlighter';
+import type { Annotation } from '@/shared/types';
 
 console.log('Rio: Content script loaded on', window.location.href);
 
@@ -17,6 +19,7 @@ console.log('Rio: Content script loaded on', window.location.href);
 
 let scraper: PlatformScraper | null = null;
 let conversationId: string | null = null;
+let currentAnnotations: Annotation[] = [];
 
 function init() {
   // Auto-detect platform and get appropriate scraper
@@ -39,6 +42,12 @@ function init() {
 
   // Set up text selection listener for HUD
   setupSelectionListener();
+
+  // Load and highlight annotations
+  if (conversationId) {
+    loadAndHighlightAnnotations();
+    setupStorageListener();
+  }
 
   console.log('Rio: Content script initialized');
 }
@@ -96,8 +105,44 @@ function handleShowAnnotationForm(payload: { selectedText: string }) {
 }
 
 function handleHighlightText(payload: { annotation: unknown }) {
-  console.log('Rio: Highlight text', payload);
-  // TODO: Week 3 - Implement highlighting
+  const annotation = payload.annotation as Annotation;
+  currentAnnotations.push(annotation);
+  highlightAnnotations([annotation]);
+}
+
+// --- Annotation Loading & Storage Sync ---
+
+async function loadAndHighlightAnnotations() {
+  if (!conversationId) return;
+
+  try {
+    const result = await chrome.storage.local.get('annotations');
+    const allAnnotations = result.annotations || {};
+    const annotations = allAnnotations[conversationId] || [];
+
+    currentAnnotations = annotations;
+    highlightAnnotations(annotations);
+
+    console.log(`Rio: Loaded and highlighted ${annotations.length} annotations`);
+  } catch (error) {
+    console.error('Rio: Error loading annotations', error);
+  }
+}
+
+function setupStorageListener() {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local') return;
+    if (!changes.annotations || !conversationId) return;
+
+    const allAnnotations = changes.annotations.newValue || {};
+    const annotations = allAnnotations[conversationId] || [];
+
+    currentAnnotations = annotations;
+    clearHighlights();
+    highlightAnnotations(annotations);
+
+    console.log(`Rio: Storage updated, re-highlighted ${annotations.length} annotations`);
+  });
 }
 
 // --- Text Selection & HUD ---
@@ -203,36 +248,40 @@ function injectStyles() {
       background: #4f46e5;
     }
 
-    /* Rio Highlights (for Week 3) */
+    /* Rio Highlights */
     .rio-highlight {
-      background-color: rgba(99, 102, 241, 0.2);
-      border-bottom: 2px solid #6366f1;
       cursor: pointer;
-      transition: background-color 0.2s;
+      border-radius: 2px;
+      padding: 0 2px;
+      transition: all 0.2s ease;
+      position: relative;
     }
 
     .rio-highlight:hover {
-      background-color: rgba(99, 102, 241, 0.3);
+      filter: brightness(1.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
+    /* Category colors (borders) */
     .rio-highlight.factuality {
-      border-bottom-color: #00c65e;
-      background-color: rgba(0, 198, 94, 0.1);
+      border-bottom: 2px solid #00c65e;
     }
 
     .rio-highlight.critique {
-      border-bottom-color: #007bff;
-      background-color: rgba(0, 123, 255, 0.1);
+      border-bottom: 2px solid #007bff;
     }
 
     .rio-highlight.sycophancy {
-      border-bottom-color: #ffa500;
-      background-color: rgba(255, 165, 0, 0.1);
+      border-bottom: 2px solid #ffa500;
     }
 
     .rio-highlight.bias {
-      border-bottom-color: #dc3545;
-      background-color: rgba(220, 53, 69, 0.1);
+      border-bottom: 2px solid #dc3545;
+    }
+
+    /* Custom category fallback */
+    .rio-highlight:not(.factuality):not(.critique):not(.sycophancy):not(.bias) {
+      border-bottom: 2px solid #6366f1;
     }
   `;
   document.head.appendChild(style);
