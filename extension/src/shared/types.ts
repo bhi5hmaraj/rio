@@ -82,7 +82,8 @@ export type MessageType =
   | 'ADD_ANNOTATION'
   | 'HIGHLIGHT_TEXT'
   | 'OPEN_SIDE_PANEL'
-  | 'EXPORT_CHAT';
+  | 'EXPORT_CHAT'
+  | 'UPDATE_SETTINGS';
 
 export interface BaseMessage {
   type: MessageType;

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRioStore } from '@/shared/store';
+import { SettingsForm } from './components/SettingsForm';
 
 function App() {
   const { annotations, settings, loadAnnotations, loadSettings, setAnnotations } = useRioStore();
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Load data from storage on mount
   useEffect(() => {
@@ -173,14 +175,27 @@ function App() {
         </section>
 
         <section className="rio-section">
-          <h2>Settings</h2>
-          <div className="rio-settings">
-            <p className="rio-text-muted">
-              {settings.aiConfig.provider
-                ? `Provider: ${settings.aiConfig.provider}`
-                : 'No AI provider configured'}
-            </p>
+          <div className="rio-settings-header">
+            <h2>Settings</h2>
+            <button
+              className="rio-button secondary"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              {showSettings ? 'Hide' : 'Configure'}
+            </button>
           </div>
+          {showSettings ? (
+            <SettingsForm onClose={() => setShowSettings(false)} />
+          ) : (
+            <div className="rio-settings-summary">
+              <p className="rio-text-muted">
+                Provider: {settings.aiConfig.provider || 'Not configured'}
+              </p>
+              <p className="rio-text-muted">
+                Endpoint: {settings.aiConfig.litellmEndpoint}
+              </p>
+            </div>
+          )}
         </section>
       </main>
 
