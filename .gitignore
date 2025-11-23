@@ -8,6 +8,8 @@ build/
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
 
 # IDE
 .vscode/
