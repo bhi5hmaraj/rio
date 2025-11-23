@@ -7,10 +7,14 @@ interface RioStore {
   addAnnotation: (annotation: Annotation) => void;
   removeAnnotation: (id: string) => void;
   clearAnnotations: () => void;
+  setAnnotations: (annotations: Annotation[]) => void;
+  loadAnnotations: (conversationId: string) => Promise<void>;
 
   // Settings
   settings: RioSettings;
   updateSettings: (settings: Partial<RioSettings>) => void;
+  setSettings: (settings: RioSettings) => void;
+  loadSettings: () => Promise<void>;
 
   // UI State
   isLoading: boolean;
@@ -48,6 +52,19 @@ export const useRioStore = create<RioStore>((set) => ({
 
   clearAnnotations: () => set({ annotations: [] }),
 
+  setAnnotations: (annotations) => set({ annotations }),
+
+  loadAnnotations: async (conversationId) => {
+    try {
+      const result = await chrome.storage.local.get('annotations');
+      const allAnnotations = result.annotations || {};
+      const conversationAnnotations = allAnnotations[conversationId] || [];
+      set({ annotations: conversationAnnotations });
+    } catch (error) {
+      console.error('Rio: Failed to load annotations', error);
+    }
+  },
+
   updateSettings: (newSettings) =>
     set((state) => ({
       settings: {
@@ -55,6 +72,19 @@ export const useRioStore = create<RioStore>((set) => ({
         ...newSettings,
       },
     })),
+
+  setSettings: (settings) => set({ settings }),
+
+  loadSettings: async () => {
+    try {
+      const result = await chrome.storage.local.get('settings');
+      if (result.settings) {
+        set({ settings: result.settings });
+      }
+    } catch (error) {
+      console.error('Rio: Failed to load settings', error);
+    }
+  },
 
   setLoading: (loading) => set({ isLoading: loading }),
 }));

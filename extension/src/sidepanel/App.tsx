@@ -1,10 +1,70 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRioStore } from '@/shared/store';
 
 function App() {
-  const { annotations, settings } = useRioStore();
+  const { annotations, settings, loadAnnotations, loadSettings, setAnnotations } = useRioStore();
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+
+  // Load data from storage on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load settings
+        await loadSettings();
+
+        // Get active tab to determine conversation ID
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (tab?.id && tab.url) {
+          // Extract conversation ID from URL
+          const match = tab.url.match(/\/c\/([a-f0-9-]+)/);
+          const convId = match ? match[1] : null;
+
+          if (convId) {
+            setConversationId(convId);
+            await loadAnnotations(convId);
+          }
+        }
+      } catch (error) {
+        console.error('Rio: Failed to load data', error);
+      }
+    };
+
+    loadData();
+  }, [loadAnnotations, loadSettings]);
+
+  // Listen for storage changes for real-time updates
+  useEffect(() => {
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName !== 'local') return;
+
+      // Handle annotation changes
+      if (changes.annotations && conversationId) {
+        const newAnnotations = changes.annotations.newValue || {};
+        const conversationAnnotations = newAnnotations[conversationId] || [];
+        setAnnotations(conversationAnnotations);
+      }
+
+      // Handle settings changes
+      if (changes.settings) {
+        const newSettings = changes.settings.newValue;
+        if (newSettings) {
+          useRioStore.getState().setSettings(newSettings);
+        }
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, [conversationId, setAnnotations]);
 
   const handleExportChat = async () => {
     setIsExporting(true);
