@@ -125,6 +125,21 @@ body {
   background-color: #e5e7eb;
 }
 
+.rio-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rio-button:disabled:hover {
+  background-color: var(--rio-primary);
+}
+
+.rio-error {
+  color: var(--rio-bias);
+  font-size: var(--rio-font-size-sm);
+  margin-top: var(--rio-space-sm);
+}
+
 .rio-empty-state {
   padding: var(--rio-space-lg);
   text-align: center;
