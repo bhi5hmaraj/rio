@@ -84,6 +84,10 @@ chrome.runtime.onMessage.addListener((message: RioMessage, sender, sendResponse)
       handleUpdateSettings(message.payload as { aiConfig: unknown; preferences: unknown }, sendResponse);
       return true;
 
+    case 'COPILOT_CHAT':
+      handleCopilotChat(message.payload as { messages: unknown[] }, sendResponse);
+      return true;
+
     default:
       console.warn('Rio: Unknown message type', message.type);
   }
@@ -204,6 +208,62 @@ async function handleUpdateSettings(
     sendResponse({ success: true });
   } catch (error) {
     console.error('Rio: Error updating settings', error);
+    sendResponse({ success: false, error: (error as Error).message });
+  }
+}
+
+async function handleCopilotChat(
+  payload: { messages: unknown[] },
+  sendResponse: (response: unknown) => void
+) {
+  try {
+    // Get settings from storage
+    const settings = await storageService.getSettings();
+
+    if (!settings?.aiConfig?.apiKey) {
+      throw new Error('No API key configured. Please configure settings first.');
+    }
+
+    if (!settings?.aiConfig?.litellmEndpoint) {
+      throw new Error('No LiteLLM endpoint configured. Please configure settings first.');
+    }
+
+    // Format messages for LiteLLM
+    const messages = payload.messages as Array<{ role: string; content: string }>;
+
+    // Call LiteLLM directly for chat completions
+    const response = await fetch(`${settings.aiConfig.litellmEndpoint}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${settings.aiConfig.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: settings.aiConfig.model || 'gemini-2.5-flash-lite',
+        messages,
+        temperature: 0.7,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`LiteLLM API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const assistantMessage = data.choices[0].message.content;
+
+    sendResponse({
+      success: true,
+      data: {
+        message: assistantMessage,
+        model: data.model,
+        usage: data.usage,
+      },
+    });
+  } catch (error) {
+    console.error('Rio: Error in CopilotKit chat', error);
     sendResponse({ success: false, error: (error as Error).message });
   }
 }

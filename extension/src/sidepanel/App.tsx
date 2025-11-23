@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { useRioStore } from '@/shared/store';
 import { SettingsForm } from './components/SettingsForm';
 import { AnnotationForm } from './components/AnnotationForm';
+import { CopilotProvider } from './components/CopilotProvider';
+import { useCopilotActions } from './hooks/useCopilotActions';
 import type { Annotation } from '@/shared/types';
 
-function App() {
+function AppContent() {
+  // Initialize CopilotKit actions
+  useCopilotActions();
   const { annotations, settings, loadAnnotations, loadSettings, setAnnotations } = useRioStore();
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -291,6 +295,14 @@ function App() {
         <p className="rio-version">Rio v0.1.0 MVP</p>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <CopilotProvider>
+      <AppContent />
+    </CopilotProvider>
   );
 }
 

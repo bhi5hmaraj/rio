@@ -83,7 +83,8 @@ export type MessageType =
   | 'HIGHLIGHT_TEXT'
   | 'OPEN_SIDE_PANEL'
   | 'EXPORT_CHAT'
-  | 'UPDATE_SETTINGS';
+  | 'UPDATE_SETTINGS'
+  | 'COPILOT_CHAT';
 
 export interface BaseMessage {
   type: MessageType;
