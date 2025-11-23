@@ -11,6 +11,7 @@
 import { ScraperFactory } from './scrapers/factory';
 import type { PlatformScraper } from './scrapers/base';
 import { highlightAnnotations, clearHighlights } from './highlighter';
+import { initializeTooltip, updateAnnotations } from './tooltip';
 import type { Annotation } from '@/shared/types';
 
 console.log('Rio: Content script loaded on', window.location.href);
@@ -122,6 +123,7 @@ async function loadAndHighlightAnnotations() {
 
     currentAnnotations = annotations;
     highlightAnnotations(annotations);
+    initializeTooltip(annotations);
 
     console.log(`Rio: Loaded and highlighted ${annotations.length} annotations`);
   } catch (error) {
@@ -140,6 +142,7 @@ function setupStorageListener() {
     currentAnnotations = annotations;
     clearHighlights();
     highlightAnnotations(annotations);
+    updateAnnotations(annotations);
 
     console.log(`Rio: Storage updated, re-highlighted ${annotations.length} annotations`);
   });
@@ -282,6 +285,102 @@ function injectStyles() {
     /* Custom category fallback */
     .rio-highlight:not(.factuality):not(.critique):not(.sycophancy):not(.bias) {
       border-bottom: 2px solid #6366f1;
+    }
+
+    /* Rio Tooltip */
+    .rio-tooltip {
+      position: fixed;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      padding: 12px;
+      max-width: 320px;
+      z-index: 10001;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .rio-tooltip-pinned {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      border-color: #6366f1;
+    }
+
+    .rio-tooltip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .rio-tooltip-category {
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .rio-tooltip-strength {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .rio-tooltip-quote {
+      background: #f9fafb;
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid #6366f1;
+      margin-bottom: 8px;
+      font-style: italic;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .rio-tooltip-note {
+      color: #1f2937;
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+
+    .rio-tooltip-meta {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: #9ca3af;
+      padding-top: 8px;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    .rio-tooltip-model {
+      font-family: 'Courier New', monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .rio-tooltip-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 16px;
+      line-height: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .rio-tooltip-close:hover {
+      background: #e5e7eb;
+      color: #374151;
     }
   `;
   document.head.appendChild(style);
