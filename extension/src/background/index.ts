@@ -79,6 +79,10 @@ chrome.runtime.onMessage.addListener((message: RioMessage, sender, sendResponse)
       handleExportChat(sendResponse);
       return true;
 
+    case 'UPDATE_SETTINGS':
+      handleUpdateSettings(message.payload as { aiConfig: unknown; preferences: unknown }, sendResponse);
+      return true;
+
     default:
       console.warn('Rio: Unknown message type', message.type);
   }
@@ -170,6 +174,20 @@ async function handleExportChat(sendResponse: (response: unknown) => void) {
     });
   } catch (error) {
     console.error('Rio: Error exporting chat', error);
+    sendResponse({ success: false, error: (error as Error).message });
+  }
+}
+
+async function handleUpdateSettings(
+  payload: { aiConfig: unknown; preferences: unknown },
+  sendResponse: (response: unknown) => void
+) {
+  try {
+    const settings = payload as any;
+    await storageService.saveSettings(settings);
+    sendResponse({ success: true });
+  } catch (error) {
+    console.error('Rio: Error updating settings', error);
     sendResponse({ success: false, error: (error as Error).message });
   }
 }
