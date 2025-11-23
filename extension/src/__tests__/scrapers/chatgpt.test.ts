@@ -49,17 +49,17 @@ describe('ChatGPT Scraper', () => {
         </div>
       `;
 
-      // Mock URL
+      // Mock URL (use hex-only ID to match regex pattern)
       delete (window as any).location;
       window.location = {
-        href: 'https://chatgpt.com/c/test-conversation-id',
+        href: 'https://chatgpt.com/c/abc-123-def-456',
       } as any;
     });
 
     it('should scrape all messages correctly', () => {
       const result = scrapeConversation();
 
-      expect(result.conversationId).toBe('test-conversation-id');
+      expect(result.conversationId).toBe('abc-123-def-456');
       expect(result.messages).toHaveLength(3);
       expect(result.messages[0].role).toBe('user');
       expect(result.messages[0].content).toContain('Hello, ChatGPT!');

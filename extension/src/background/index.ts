@@ -56,11 +56,11 @@ chrome.runtime.onMessage.addListener((message: RioMessage, sender, sendResponse)
       return true; // Keep channel open for async response
 
     case 'RUN_FACT_CHECK':
-      handleFactCheck(message.payload, sendResponse);
+      handleFactCheck(message.payload as { conversationId: string; messages: unknown[] }, sendResponse);
       return true;
 
     case 'ADD_ANNOTATION':
-      handleAddAnnotation(message.payload, sendResponse);
+      handleAddAnnotation(message.payload as { annotation: unknown }, sendResponse);
       return true;
 
     case 'OPEN_SIDE_PANEL':
