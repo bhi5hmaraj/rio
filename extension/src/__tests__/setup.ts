@@ -7,6 +7,20 @@ import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 import { webcrypto } from 'crypto';
 
+// Polyfill fetch for integration tests
+// Node.js 18+ has native fetch, but it might not be available in jsdom
+// We'll just expose it globally if it exists
+if (typeof global.fetch === 'undefined') {
+  // Try to use Node.js built-in fetch (Node 18+)
+  try {
+    // @ts-ignore - Node.js 18+ has fetch
+    const nodeFetch = globalThis.fetch || require('undici').fetch;
+    global.fetch = nodeFetch as any;
+  } catch {
+    console.warn('fetch not available - integration tests may fail');
+  }
+}
+
 // Polyfill TextEncoder/TextDecoder for jsdom environment
 global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
