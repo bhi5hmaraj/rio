@@ -2,7 +2,7 @@
  * Tests for ChatGPT scraper
  */
 
-import { getConversationId, scrapeConversation, preprocessDomWithIDs } from '@/content/scrapers/chatgpt';
+import { ChatGPTScraper, getConversationId, scrapeConversation, preprocessDomWithIDs } from '@/content/scrapers/chatgpt';
 
 describe('ChatGPT Scraper', () => {
   describe('getConversationId', () => {
@@ -110,6 +110,83 @@ describe('ChatGPT Scraper', () => {
       document.body.innerHTML = '<div>Empty</div>';
       const count = preprocessDomWithIDs();
       expect(count).toBe(0);
+    });
+  });
+
+  describe('ChatGPTScraper (class-based adapter)', () => {
+    let scraper: ChatGPTScraper;
+
+    beforeEach(() => {
+      scraper = new ChatGPTScraper();
+    });
+
+    describe('canScrape', () => {
+      it('should return true for chatgpt.com URLs', () => {
+        delete (window as any).location;
+        window.location = { href: 'https://chatgpt.com/c/abc-123' } as any;
+        expect(scraper.canScrape()).toBe(true);
+      });
+
+      it('should return true for chat.openai.com URLs', () => {
+        delete (window as any).location;
+        window.location = { href: 'https://chat.openai.com/c/abc-123' } as any;
+        expect(scraper.canScrape()).toBe(true);
+      });
+
+      it('should return false for non-ChatGPT URLs', () => {
+        delete (window as any).location;
+        window.location = { href: 'https://example.com' } as any;
+        expect(scraper.canScrape()).toBe(false);
+      });
+    });
+
+    describe('getConversationId', () => {
+      it('should extract conversation ID from URL', () => {
+        delete (window as any).location;
+        window.location = { href: 'https://chatgpt.com/c/abc-123-def' } as any;
+        expect(scraper.getConversationId()).toBe('abc-123-def');
+      });
+
+      it('should return null for non-conversation URLs', () => {
+        delete (window as any).location;
+        window.location = { href: 'https://chatgpt.com/' } as any;
+        expect(scraper.getConversationId()).toBeNull();
+      });
+    });
+
+    describe('scrapeConversation', () => {
+      beforeEach(() => {
+        document.body.innerHTML = `
+          <div data-message-author-role="user">
+            <div class="prose"><p>Test message</p></div>
+          </div>
+        `;
+        delete (window as any).location;
+        window.location = { href: 'https://chatgpt.com/c/abc-123' } as any;
+      });
+
+      it('should return ConversationData with correct structure', () => {
+        const result = scraper.scrapeConversation();
+        expect(result).toHaveProperty('conversationId');
+        expect(result).toHaveProperty('conversationUrl');
+        expect(result).toHaveProperty('messages');
+        expect(result).toHaveProperty('scrapedAt');
+        expect(Array.isArray(result.messages)).toBe(true);
+      });
+    });
+
+    describe('getMetadata', () => {
+      it('should return platform metadata', () => {
+        const metadata = scraper.getMetadata();
+        expect(metadata.platform).toBe('chatgpt');
+        expect(metadata.version).toBe('1.0');
+      });
+    });
+
+    describe('platform', () => {
+      it('should have platform property set to chatgpt', () => {
+        expect(scraper.platform).toBe('chatgpt');
+      });
     });
   });
 });

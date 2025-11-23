@@ -7,7 +7,8 @@
  * - Side Panel management
  */
 
-import type { RioMessage } from '@/shared/types';
+import type { RioMessage, Annotation } from '@/shared/types';
+import { storageService } from './services/StorageService';
 
 console.log('Rio: Background service worker loaded');
 
@@ -22,7 +23,11 @@ chrome.action.onClicked.addListener((tab) => {
 
 // --- Context Menu (for manual annotations) ---
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
+  // Initialize storage with defaults
+  await storageService.initialize();
+
+  // Create context menu
   chrome.contextMenus.create({
     id: 'rio-annotate',
     title: 'Annotate with Rio',
@@ -108,21 +113,20 @@ async function handleFactCheck(
 ) {
   try {
     // Get settings from storage
-    const settings = await chrome.storage.local.get('settings');
-    const aiConfig = settings.settings?.aiConfig;
+    const settings = await storageService.getSettings();
 
-    if (!aiConfig?.apiKey) {
+    if (!settings?.aiConfig?.apiKey) {
       throw new Error('No API key configured');
     }
 
     // Call LiteLLM proxy (placeholder for now)
     console.log('Rio: Would call LiteLLM with', {
-      endpoint: aiConfig.litellmEndpoint,
-      provider: aiConfig.provider,
+      endpoint: settings.aiConfig.litellmEndpoint,
+      provider: settings.aiConfig.provider,
       messageCount: payload.messages.length,
     });
 
-    // TODO: Implement actual LiteLLM call
+    // TODO: Week 3 - Implement actual LiteLLM call
     sendResponse({
       success: true,
       data: {
@@ -141,26 +145,8 @@ async function handleAddAnnotation(
   sendResponse: (response: unknown) => void
 ) {
   try {
-    // Get existing annotations from storage
-    const result = await chrome.storage.local.get('annotations');
-    const annotations = result.annotations || {};
-
-    // Add new annotation (grouped by conversationId)
-    const annotation = payload.annotation as {
-      conversationId: string;
-      [key: string]: unknown;
-    };
-    const conversationId = annotation.conversationId;
-
-    if (!annotations[conversationId]) {
-      annotations[conversationId] = [];
-    }
-
-    annotations[conversationId].push(annotation);
-
-    // Save back to storage
-    await chrome.storage.local.set({ annotations });
-
+    const annotation = payload.annotation as Annotation;
+    await storageService.saveAnnotation(annotation);
     sendResponse({ success: true });
   } catch (error) {
     console.error('Rio: Error adding annotation', error);
@@ -171,13 +157,14 @@ async function handleAddAnnotation(
 async function handleExportChat(sendResponse: (response: unknown) => void) {
   try {
     // Get all data from storage
-    const result = await chrome.storage.local.get(['annotations', 'settings']);
+    const annotations = await storageService.getAllAnnotations();
+    const settings = await storageService.getSettings();
 
     sendResponse({
       success: true,
       data: {
-        annotations: result.annotations || {},
-        settings: result.settings || {},
+        annotations,
+        settings,
         exportedAt: Date.now(),
       },
     });
@@ -187,37 +174,5 @@ async function handleExportChat(sendResponse: (response: unknown) => void) {
   }
 }
 
-// --- Storage Management ---
-
-// Initialize storage with defaults if needed
-chrome.runtime.onInstalled.addListener(async () => {
-  const result = await chrome.storage.local.get(['settings', 'annotations', 'customCategories']);
-
-  if (!result.settings) {
-    await chrome.storage.local.set({
-      settings: {
-        aiConfig: {
-          litellmEndpoint: 'http://localhost:4000',
-          provider: 'gemini',
-          apiKey: '',
-          model: 'gemini-2.5-flash',
-        },
-        preferences: {
-          autoFactCheck: false,
-          showHUD: true,
-          highlightStyle: 'underline',
-        },
-      },
-    });
-  }
-
-  if (!result.annotations) {
-    await chrome.storage.local.set({ annotations: {} });
-  }
-
-  if (!result.customCategories) {
-    await chrome.storage.local.set({ customCategories: [] });
-  }
-
-  console.log('Rio: Storage initialized');
-});
+// All storage operations now handled by StorageService
+// See: src/background/services/StorageService.ts
