@@ -4,6 +4,17 @@
  */
 
 import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
+import { webcrypto } from 'crypto';
+
+// Polyfill TextEncoder/TextDecoder for jsdom environment
+global.TextEncoder = TextEncoder as any;
+global.TextDecoder = TextDecoder as any;
+
+// Polyfill Web Crypto API for jsdom environment
+Object.defineProperty(global, 'crypto', {
+  value: webcrypto,
+});
 
 // Mock Chrome Extension APIs
 global.chrome = {

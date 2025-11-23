@@ -5,6 +5,7 @@
  */
 
 import type { Annotation, RioSettings, Category } from '@/shared/types';
+import { encrypt, decrypt, getEncryptionPassword } from '@/shared/crypto';
 
 export class StorageService {
   /**
@@ -89,19 +90,47 @@ export class StorageService {
 
   /**
    * Get settings
+   * Automatically decrypts API key if present
    */
   async getSettings(): Promise<RioSettings | null> {
     const result = await chrome.storage.local.get('settings');
-    return result.settings || null;
+    if (!result.settings) {
+      return null;
+    }
+
+    // Deep clone to avoid modifying the stored object
+    const settings = JSON.parse(JSON.stringify(result.settings)) as RioSettings;
+
+    // Decrypt API key if it exists and is encrypted
+    if (settings.aiConfig.apiKey && settings.aiConfig.apiKey.length > 0) {
+      try {
+        const password = getEncryptionPassword();
+        settings.aiConfig.apiKey = await decrypt(settings.aiConfig.apiKey, password);
+      } catch (error) {
+        console.warn('Rio: Failed to decrypt API key, may be stored in plain text', error);
+        // If decryption fails, assume it's already plain text (for backward compatibility)
+      }
+    }
+
+    return settings;
   }
 
   /**
    * Save settings
+   * Automatically encrypts API key before storing
    */
   async saveSettings(settings: RioSettings): Promise<void> {
-    // TODO: Week 2 - Encrypt API key before storing
-    await chrome.storage.local.set({ settings });
-    console.log('Rio: Settings saved');
+    // Deep clone to avoid modifying the original object
+    const settingsToStore = JSON.parse(JSON.stringify(settings)) as RioSettings;
+
+    // Encrypt API key if present
+    if (settingsToStore.aiConfig.apiKey && settingsToStore.aiConfig.apiKey.length > 0) {
+      const password = getEncryptionPassword();
+      settingsToStore.aiConfig.apiKey = await encrypt(settingsToStore.aiConfig.apiKey, password);
+    }
+
+    await chrome.storage.local.set({ settings: settingsToStore });
+    console.log('Rio: Settings saved (API key encrypted)');
   }
 
   /**
