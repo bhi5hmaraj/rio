@@ -7,8 +7,9 @@
  * - Side Panel management
  */
 
-import type { RioMessage, Annotation } from '@/shared/types';
+import type { RioMessage, Annotation, ChatMessage } from '@/shared/types';
 import { storageService } from './services/StorageService';
+import { createLiteLLMClient } from './services/LiteLLMClient';
 
 console.log('Rio: Background service worker loaded');
 
@@ -123,19 +124,34 @@ async function handleFactCheck(
       throw new Error('No API key configured');
     }
 
-    // Call LiteLLM proxy (placeholder for now)
-    console.log('Rio: Would call LiteLLM with', {
-      endpoint: settings.aiConfig.litellmEndpoint,
-      provider: settings.aiConfig.provider,
-      messageCount: payload.messages.length,
+    if (!settings?.aiConfig?.litellmEndpoint) {
+      throw new Error('No LiteLLM endpoint configured');
+    }
+
+    // Get conversation URL from the messages payload
+    const messages = payload.messages as ChatMessage[];
+    const conversationUrl = `https://chatgpt.com/c/${payload.conversationId}`;
+
+    // Create LiteLLM client and run fact-check
+    const client = createLiteLLMClient(settings.aiConfig);
+    const result = await client.factCheck({
+      conversationId: payload.conversationId,
+      conversationUrl,
+      messages,
     });
 
-    // TODO: Week 3 - Implement actual LiteLLM call
+    // Save all annotations to storage
+    for (const annotation of result.annotations) {
+      await storageService.saveAnnotation(annotation);
+    }
+
+    console.log(`Rio: Fact-check complete, found ${result.annotations.length} annotations`);
+
     sendResponse({
       success: true,
       data: {
-        annotations: [],
-        message: 'Fact-check not yet implemented (Week 3)',
+        annotations: result.annotations,
+        count: result.annotations.length,
       },
     });
   } catch (error) {
