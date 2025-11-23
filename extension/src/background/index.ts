@@ -38,16 +38,16 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'rio-annotate' && tab?.id) {
-    // Send message to content script to handle annotation
-    chrome.tabs.sendMessage(tab.id, {
+    // Open side panel first
+    chrome.sidePanel.open({ tabId: tab.id });
+
+    // Broadcast message to side panel (using runtime.sendMessage so side panel receives it)
+    chrome.runtime.sendMessage({
       type: 'SHOW_ANNOTATION_FORM',
       payload: {
         selectedText: info.selectionText,
       },
     });
-
-    // Open side panel
-    chrome.sidePanel.open({ tabId: tab.id });
   }
 });
 
