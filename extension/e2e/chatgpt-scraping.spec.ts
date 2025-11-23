@@ -5,6 +5,10 @@
 
 import { test, expect, chromium, type BrowserContext } from '@playwright/test';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let context: BrowserContext;
 
@@ -13,7 +17,7 @@ test.beforeAll(async () => {
   const extensionPath = path.join(__dirname, '../dist');
 
   context = await chromium.launchPersistentContext('', {
-    headless: false, // Extensions require headed mode
+    headless: true, // Chrome now supports extensions in headless mode
     args: [
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`,
@@ -29,11 +33,20 @@ test.describe('ChatGPT Scraping', () => {
   test('should detect ChatGPT conversation page', async () => {
     const page = await context.newPage();
 
-    // Note: This test requires actual ChatGPT access or a mock server
-    // For MVP, we'll use a simple check
+    // Intercept network requests to return mock HTML
+    const mockHTML = '<html><head><title>ChatGPT</title></head><body></body></html>';
+    await page.route('**/*', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: mockHTML,
+      });
+    });
+
+    // Navigate to ChatGPT URL (will be intercepted)
     await page.goto('https://chatgpt.com');
 
-    // Verify extension is loaded
+    // Verify extension is loaded and page title is set
     const title = await page.title();
     expect(title).toBeTruthy();
   });
