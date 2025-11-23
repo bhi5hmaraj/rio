@@ -8,16 +8,27 @@
  * - Text selection detection
  */
 
-import { scrapeConversation, getConversationId } from './scrapers/chatgpt';
+import { ScraperFactory } from './scrapers/factory';
+import type { PlatformScraper } from './scrapers/base';
 
 console.log('Rio: Content script loaded on', window.location.href);
 
 // --- Initialize ---
 
+let scraper: PlatformScraper | null = null;
 let conversationId: string | null = null;
 
 function init() {
-  conversationId = getConversationId();
+  // Auto-detect platform and get appropriate scraper
+  scraper = ScraperFactory.getScraper();
+
+  if (!scraper) {
+    console.warn('Rio: Not running on a supported platform');
+    return;
+  }
+
+  conversationId = scraper.getConversationId();
+  console.log('Rio: Platform:', scraper.platform);
   console.log('Rio: Conversation ID:', conversationId);
 
   // Inject Rio styles
@@ -61,7 +72,11 @@ function setupMessageListener() {
 
 function handleScrapeNow(sendResponse: (response: unknown) => void) {
   try {
-    const data = scrapeConversation();
+    if (!scraper) {
+      throw new Error('No scraper available for this platform');
+    }
+
+    const data = scraper.scrapeConversation();
     sendResponse({
       success: true,
       data,
