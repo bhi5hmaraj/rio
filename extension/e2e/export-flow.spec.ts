@@ -5,7 +5,11 @@
 
 import { test, expect, chromium, type BrowserContext, type Page } from '@playwright/test';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let context: BrowserContext;
 
@@ -14,7 +18,7 @@ test.beforeAll(async () => {
   const extensionPath = path.join(__dirname, '../dist');
 
   context = await chromium.launchPersistentContext('', {
-    headless: false, // Extensions require headed mode
+    headless: true, // Chrome now supports extensions in headless mode
     args: [
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`,
@@ -63,11 +67,17 @@ async function createMockChatGPTPage(page: Page, conversationId: string) {
     </html>
   `;
 
-  // Navigate to a URL that matches ChatGPT pattern
-  await page.goto(`https://chatgpt.com/c/${conversationId}`);
+  // Intercept network requests to avoid actual ChatGPT access
+  await page.route('**/*', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: mockHTML,
+    });
+  });
 
-  // Replace page content with mock HTML
-  await page.setContent(mockHTML);
+  // Now navigate to the ChatGPT URL - it will be intercepted and return our mock HTML
+  await page.goto(`https://chatgpt.com/c/${conversationId}`);
 }
 
 test.describe('Export Flow', () => {
@@ -139,9 +149,18 @@ test.describe('Export Flow', () => {
   test('should handle scraping errors gracefully', async () => {
     const page = await context.newPage();
 
+    // Intercept network requests and return non-ChatGPT HTML
+    const nonChatGPTHTML = '<html><body><p>Not a ChatGPT page</p></body></html>';
+    await page.route('**/*', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: nonChatGPTHTML,
+      });
+    });
+
     // Navigate to a page without ChatGPT structure
     await page.goto('https://example.com');
-    await page.setContent('<html><body><p>Not a ChatGPT page</p></body></html>');
 
     await page.waitForTimeout(500);
 
